@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { ThemeToggle } from '@/components/ThemeToggle';
 import { useAuth } from '@/hooks/useAuth';
 import { Zap, Users, BarChart3, ArrowRight } from 'lucide-react';
 
@@ -26,6 +27,11 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-accent/20">
+      {/* Theme Toggle */}
+      <div className="absolute top-4 right-4">
+        <ThemeToggle />
+      </div>
+      
       {/* Navigation */}
       <nav className="container mx-auto px-4 py-6">
         <div className="flex items-center justify-between">
@@ -43,8 +49,12 @@ const Index = () => {
           <motion.div
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
+            className="flex gap-2"
           >
-            <Button onClick={() => navigate('/auth')} className="gap-2">
+            <Button onClick={() => navigate('/login')} variant="outline">
+              Sign In
+            </Button>
+            <Button onClick={() => navigate('/signup')} className="gap-2">
               Get Started
               <ArrowRight className="w-4 h-4" />
             </Button>
@@ -77,7 +87,7 @@ const Index = () => {
           >
             <Button 
               size="lg" 
-              onClick={() => navigate('/auth')}
+              onClick={() => navigate('/signup')}
               className="text-lg px-8 py-6 gap-3"
             >
               <Zap className="w-5 h-5" />
@@ -86,10 +96,10 @@ const Index = () => {
             <Button 
               size="lg" 
               variant="outline"
-              onClick={() => navigate('/auth')}
+              onClick={() => navigate('/login')}
               className="text-lg px-8 py-6"
             >
-              Learn More
+              Sign In
             </Button>
           </motion.div>
 
@@ -166,7 +176,7 @@ const Index = () => {
             </p>
             <Button 
               size="lg" 
-              onClick={() => navigate('/auth')}
+              onClick={() => navigate('/signup')}
               className="text-lg px-8 py-6 gap-3"
             >
               <Zap className="w-5 h-5" />
