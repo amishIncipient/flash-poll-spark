@@ -33,21 +33,60 @@ export default function ResetPassword() {
   const [searchParams] = useSearchParams();
 
   useEffect(() => {
-    // Check if we have access token in URL (from email link)
-    const accessToken = searchParams.get('access_token');
-    const refreshToken = searchParams.get('refresh_token');
-    
-    if (accessToken && refreshToken) {
-      // Set the session with the tokens from the URL
-      supabase.auth.setSession({
-        access_token: accessToken,
-        refresh_token: refreshToken,
+  const init = async () => {
+    const hash = window.location.hash.substring(1); 
+    const hashParams = new URLSearchParams(hash);
+
+    const error = hashParams.get('error');
+    const errorCode = hashParams.get('error_code');
+    const errorDescription = hashParams.get('error_description');
+
+    if (error === 'access_denied' && errorCode === 'otp_expired') {
+      toast({
+        title: "Link expired",
+        description: decodeURIComponent(errorDescription || "Reset link is invalid or expired."),
+        variant: "destructive",
       });
-    } else if (user) {
-      // If user is already authenticated but no tokens in URL, redirect to dashboard
-      navigate('/dashboard');
+
+      navigate('/');
+      return;
     }
-  }, [user, navigate, searchParams]);
+
+    const accessToken = hashParams.get('access_token');
+    const refreshToken = hashParams.get('refresh_token');
+
+    if (!accessToken || !refreshToken) {
+      toast({
+        title: "Invalid reset link",
+        description: "Missing credentials. Please request a new reset link.",
+        variant: "destructive",
+      });
+      navigate('/');
+      return;
+    }
+
+    const { error: sessionError } = await supabase.auth.setSession({
+      access_token: accessToken,
+      refresh_token: refreshToken,
+    });
+
+    if (sessionError) {
+      console.error("Session error", sessionError);
+      toast({
+        title: "Session error",
+        description: "Failed to authenticate. Try again or request a new reset link.",
+        variant: "destructive",
+      });
+      navigate('/');
+      return;
+    }
+
+    // setIsSessionChecked(true);
+  };
+
+  init();
+}, [navigate]);
+
 
   const form = useForm<ResetPasswordForm>({
     resolver: zodResolver(resetPasswordSchema),
