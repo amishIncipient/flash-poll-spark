@@ -5,9 +5,10 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
-import { toast } from '@/components/ui/use-toast';
+import { toast } from '@/hooks/use-toast';
 import { formatDistanceToNow } from 'date-fns';
-import { Check, Clock, Users } from 'lucide-react';
+import { Check, Clock, Users, Trash2 } from 'lucide-react';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 
 interface PollOption {
   id: string;
@@ -26,10 +27,12 @@ interface Poll {
 interface PollCardProps {
   poll: Poll;
   isOwner: boolean;
+  onPollDeleted?: () => void;
 }
 
-export const PollCard = ({ poll, isOwner }: PollCardProps) => {
+export const PollCard = ({ poll, isOwner, onPollDeleted }: PollCardProps) => {
   const [isVoting, setIsVoting] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
   const [userVote, setUserVote] = useState<string | null>(null);
   const { user } = useAuth();
 
@@ -109,21 +112,106 @@ export const PollCard = ({ poll, isOwner }: PollCardProps) => {
     }
   };
 
+  const handleDeletePoll = async () => {
+    if (!user || !isOwner || isDeleting) return;
+
+    setIsDeleting(true);
+    try {
+      // Delete all votes for this poll first
+      const { error: votesError } = await supabase
+        .from('votes')
+        .delete()
+        .eq('poll_id', poll.id);
+
+      if (votesError) throw votesError;
+
+      // Delete all poll options
+      const { error: optionsError } = await supabase
+        .from('poll_options')
+        .delete()
+        .eq('poll_id', poll.id);
+
+      if (optionsError) throw optionsError;
+
+      // Finally delete the poll
+      const { error: pollError } = await supabase
+        .from('polls')
+        .delete()
+        .eq('id', poll.id)
+        .eq('user_id', user.id); // Extra safety check
+
+      if (pollError) throw pollError;
+
+      toast({
+        title: "Poll deleted",
+        description: "Your poll has been deleted successfully.",
+      });
+
+      // Call the callback to refresh the polls list
+      onPollDeleted?.();
+    } catch (error: any) {
+      toast({
+        title: "Error deleting poll",
+        description: error.message || "Failed to delete the poll.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
   return (
     <Card className="hover:shadow-lg transition-shadow duration-200">
       <CardHeader>
-        <CardTitle className="text-lg line-clamp-2">{poll.title}</CardTitle>
-        <div className="flex items-center gap-4 text-sm text-muted-foreground">
-          <div className="flex items-center gap-1">
-            <Clock className="w-3 h-3" />
-            {formatDistanceToNow(new Date(poll.created_at), { addSuffix: true })}
+        <div className="flex items-start justify-between">
+          <div className="flex-1">
+            <CardTitle className="text-lg line-clamp-2 pr-2">{poll.title}</CardTitle>
+            <div className="flex items-center gap-4 text-sm text-muted-foreground mt-2">
+              <div className="flex items-center gap-1">
+                <Clock className="w-3 h-3" />
+                {formatDistanceToNow(new Date(poll.created_at), { addSuffix: true })}
+              </div>
+              <div className="flex items-center gap-1">
+                <Users className="w-3 h-3" />
+                {totalVotes} votes
+              </div>
+              {isOwner && (
+                <span className="text-primary font-medium">Your poll</span>
+              )}
+            </div>
           </div>
-          <div className="flex items-center gap-1">
-            <Users className="w-3 h-3" />
-            {totalVotes} votes
-          </div>
+          
           {isOwner && (
-            <span className="text-primary font-medium">Your poll</span>
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-8 w-8 text-muted-foreground hover:text-destructive"
+                  disabled={isDeleting}
+                >
+                  <Trash2 className="w-4 h-4" />
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Delete Poll</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    Are you sure you want to delete this poll? This action cannot be undone and will permanently remove the poll and all its votes.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                  <AlertDialogAction
+                    onClick={handleDeletePoll}
+                    className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                    disabled={isDeleting}
+                  >
+                    {isDeleting ? "Deleting..." : "Delete Poll"}
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
           )}
         </div>
       </CardHeader>

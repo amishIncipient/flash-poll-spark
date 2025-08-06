@@ -114,6 +114,10 @@ export default function Dashboard() {
     fetchPolls();
   };
 
+  const handlePollDeleted = () => {
+    fetchPolls();
+  };
+
   const myPolls = polls.filter(poll => poll.user_id === user?.id);
   const allPolls = polls;
 
@@ -288,7 +292,7 @@ export default function Dashboard() {
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ delay: index * 0.1 }}
                       >
-                        <PollCard poll={poll} isOwner={true} />
+                        <PollCard poll={poll} isOwner={true} onPollDeleted={handlePollDeleted} />
                       </motion.div>
                     ))}
                   </div>
@@ -334,6 +338,7 @@ export default function Dashboard() {
                         <PollCard 
                           poll={poll} 
                           isOwner={poll.user_id === user?.id} 
+                          onPollDeleted={handlePollDeleted}
                         />
                       </motion.div>
                     ))}
