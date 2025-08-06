@@ -28,38 +28,36 @@ const Index = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-accent/20">
       {/* Navigation */}
-      <nav className="container mx-auto px-4 py-6 relative">
-        {/* Theme Toggle */}
-        <div className="absolute top-0 right-0">
-          <ThemeToggle />
-        </div>
-        <div className="flex items-center justify-between">
-          <motion.div
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
-            className="flex items-center gap-3"
-          >
-            <div className="w-10 h-10 bg-primary rounded-full flex items-center justify-center">
-              <Zap className="w-5 h-5 text-primary-foreground" />
-            </div>
-            <span className="text-2xl font-bold">Flash Poll</span>
-          </motion.div>
+    <nav className="container mx-auto px-4 sm:px-6 py-6">
+  <div className="flex flex-wrap items-center justify-between gap-4">
+    <motion.div
+      initial={{ opacity: 0, x: -20 }}
+      animate={{ opacity: 1, x: 0 }}
+      className="flex items-center gap-3"
+    >
+      <div className="w-10 h-10 bg-primary rounded-full flex items-center justify-center">
+        <Zap className="w-5 h-5 text-primary-foreground" />
+      </div>
+      <span className="text-2xl font-bold">Flash Poll</span>
+    </motion.div>
 
-          <motion.div
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
-            className="flex gap-2"
-          >
-            <Button onClick={() => navigate('/login')} variant="outline">
-              Sign In
-            </Button>
-            <Button onClick={() => navigate('/signup')} className="gap-2">
-              Get Started
-              <ArrowRight className="w-4 h-4" />
-            </Button>
-          </motion.div>
-        </div>
-      </nav>
+    <motion.div
+      initial={{ opacity: 0, x: 20 }}
+      animate={{ opacity: 1, x: 0 }}
+      className="flex flex-wrap gap-2 justify-end"
+    >
+      <ThemeToggle />
+      <Button onClick={() => navigate('/login')} variant="outline">
+        Sign In
+      </Button>
+      <Button onClick={() => navigate('/signup')} className="gap-2">
+        Get Started
+        <ArrowRight className="w-4 h-4" />
+      </Button>
+    </motion.div>
+  </div>
+</nav>
+
 
       {/* Hero Section */}
       <div className="container mx-auto px-4 py-20">
