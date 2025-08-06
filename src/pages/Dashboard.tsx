@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ProtectedRoute } from '@/components/ProtectedRoute';
 import { CreatePollForm } from '@/components/CreatePollForm';
 import { PollCard } from '@/components/PollCard';
@@ -223,112 +224,115 @@ export default function Dashboard() {
             </motion.div>
           </div>
 
-          {/* Polls Section */}
-          <div className="space-y-8">
-            {/* My Polls */}
-            <section>
-              <motion.h2
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                className="text-xl font-semibold mb-4"
-              >
-                Your Polls
-              </motion.h2>
-              {isLoading ? (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {[...Array(3)].map((_, i) => (
-                    <Card key={i} className="animate-pulse">
-                      <CardHeader>
-                        <div className="h-4 bg-muted rounded w-3/4"></div>
-                      </CardHeader>
-                      <CardContent>
-                        <div className="space-y-2">
-                          <div className="h-3 bg-muted rounded"></div>
-                          <div className="h-3 bg-muted rounded"></div>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  ))}
-                </div>
-              ) : myPolls.length === 0 ? (
-                <Card>
-                  <CardContent className="text-center py-8">
-                    <p className="text-muted-foreground">You haven't created any polls yet.</p>
-                    <Button 
-                      onClick={() => setIsCreateModalOpen(true)} 
-                      className="mt-4 gap-2"
-                    >
-                      <Plus className="w-4 h-4" />
-                      Create Your First Poll
-                    </Button>
-                  </CardContent>
-                </Card>
-              ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {myPolls.map((poll, index) => (
-                    <motion.div
-                      key={poll.id}
-                      initial={{ opacity: 0, y: 20 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: index * 0.1 }}
-                    >
-                      <PollCard poll={poll} isOwner={true} />
-                    </motion.div>
-                  ))}
-                </div>
-              )}
-            </section>
+          {/* Polls Tabs Section */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.4 }}
+          >
+            <Tabs defaultValue="your-polls" className="w-full">
+              <TabsList className="grid w-full grid-cols-2">
+                <TabsTrigger value="your-polls">Your Polls ({myPolls.length})</TabsTrigger>
+                <TabsTrigger value="all-polls">All Polls ({allPolls.length})</TabsTrigger>
+              </TabsList>
+              
+              <TabsContent value="your-polls" className="mt-6">
+                {isLoading ? (
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {[...Array(3)].map((_, i) => (
+                      <Card key={i} className="animate-pulse">
+                        <CardHeader>
+                          <div className="h-4 bg-muted rounded w-3/4"></div>
+                        </CardHeader>
+                        <CardContent>
+                          <div className="space-y-2">
+                            <div className="h-3 bg-muted rounded"></div>
+                            <div className="h-3 bg-muted rounded"></div>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </div>
+                ) : myPolls.length === 0 ? (
+                  <Card>
+                    <CardContent className="text-center py-12">
+                      <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <Plus className="w-8 h-8 text-primary" />
+                      </div>
+                      <h3 className="text-lg font-semibold mb-2">No polls yet</h3>
+                      <p className="text-muted-foreground mb-4">You haven't created any polls yet.</p>
+                      <Button 
+                        onClick={() => setIsCreateModalOpen(true)} 
+                        className="gap-2"
+                      >
+                        <Plus className="w-4 h-4" />
+                        Create Your First Poll
+                      </Button>
+                    </CardContent>
+                  </Card>
+                ) : (
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {myPolls.map((poll, index) => (
+                      <motion.div
+                        key={poll.id}
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: index * 0.1 }}
+                      >
+                        <PollCard poll={poll} isOwner={true} />
+                      </motion.div>
+                    ))}
+                  </div>
+                )}
+              </TabsContent>
 
-            {/* All Polls */}
-            <section>
-              <motion.h2
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                className="text-xl font-semibold mb-4"
-              >
-                All Polls
-              </motion.h2>
-              {isLoading ? (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {[...Array(6)].map((_, i) => (
-                    <Card key={i} className="animate-pulse">
-                      <CardHeader>
-                        <div className="h-4 bg-muted rounded w-3/4"></div>
-                      </CardHeader>
-                      <CardContent>
-                        <div className="space-y-2">
-                          <div className="h-3 bg-muted rounded"></div>
-                          <div className="h-3 bg-muted rounded"></div>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  ))}
-                </div>
-              ) : allPolls.length === 0 ? (
-                <Card>
-                  <CardContent className="text-center py-8">
-                    <p className="text-muted-foreground">No polls available yet.</p>
-                  </CardContent>
-                </Card>
-              ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {allPolls.map((poll, index) => (
-                    <motion.div
-                      key={poll.id}
-                      initial={{ opacity: 0, y: 20 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: index * 0.1 }}
-                    >
-                      <PollCard 
-                        poll={poll} 
-                        isOwner={poll.user_id === user?.id} 
-                      />
-                    </motion.div>
-                  ))}
-                </div>
-              )}
-            </section>
-          </div>
+              <TabsContent value="all-polls" className="mt-6">
+                {isLoading ? (
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {[...Array(6)].map((_, i) => (
+                      <Card key={i} className="animate-pulse">
+                        <CardHeader>
+                          <div className="h-4 bg-muted rounded w-3/4"></div>
+                        </CardHeader>
+                        <CardContent>
+                          <div className="space-y-2">
+                            <div className="h-3 bg-muted rounded"></div>
+                            <div className="h-3 bg-muted rounded"></div>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </div>
+                ) : allPolls.length === 0 ? (
+                  <Card>
+                    <CardContent className="text-center py-12">
+                      <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <BarChart3 className="w-8 h-8 text-primary" />
+                      </div>
+                      <h3 className="text-lg font-semibold mb-2">No polls available</h3>
+                      <p className="text-muted-foreground">No polls have been created yet.</p>
+                    </CardContent>
+                  </Card>
+                ) : (
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {allPolls.map((poll, index) => (
+                      <motion.div
+                        key={poll.id}
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: index * 0.1 }}
+                      >
+                        <PollCard 
+                          poll={poll} 
+                          isOwner={poll.user_id === user?.id} 
+                        />
+                      </motion.div>
+                    ))}
+                  </div>
+                )}
+              </TabsContent>
+            </Tabs>
+          </motion.div>
         </div>
       </div>
     </ProtectedRoute>
