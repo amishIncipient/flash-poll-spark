@@ -9,7 +9,7 @@ import { CreatePollForm } from '@/components/CreatePollForm';
 import { PollCard } from '@/components/PollCard';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
-import { toast } from '@/components/ui/use-toast';
+import { toast } from '@/hooks/use-toast';
 import { Plus, LogOut, Zap, Users, BarChart3 } from 'lucide-react';
 
 interface Poll {
@@ -121,9 +121,9 @@ export default function Dashboard() {
     <ProtectedRoute>
       <div className="min-h-screen bg-gradient-to-br from-background via-background to-accent/10">
         {/* Header */}
-        <header className="border-b bg-card/80 backdrop-blur-sm">
+        <header className="border-b bg-card/80 backdrop-blur-sm sticky top-0 z-10">
           <div className="container mx-auto px-4 py-4">
-            <div className="flex items-center justify-between">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
               <motion.div
                 initial={{ opacity: 0, x: -20 }}
                 animate={{ opacity: 1, x: 0 }}
@@ -133,20 +133,23 @@ export default function Dashboard() {
                   <Zap className="w-5 h-5 text-primary-foreground" />
                 </div>
                 <div>
-                  <h1 className="text-2xl font-bold">Flash Poll</h1>
-                  <p className="text-sm text-muted-foreground">Welcome back, {user?.email}</p>
+                  <h1 className="text-xl sm:text-2xl font-bold">Flash Poll</h1>
+                  <p className="text-xs sm:text-sm text-muted-foreground">
+                    Welcome back, {user?.email?.split('@')[0]}
+                  </p>
                 </div>
               </motion.div>
 
-              <div className="flex items-center gap-4">
+              <div className="flex items-center gap-2 sm:gap-4 w-full sm:w-auto">
                 <Dialog open={isCreateModalOpen} onOpenChange={setIsCreateModalOpen}>
                   <DialogTrigger asChild>
-                    <Button className="gap-2">
+                    <Button className="gap-2 flex-1 sm:flex-none">
                       <Plus className="w-4 h-4" />
-                      Create Poll
+                      <span className="hidden xs:inline">Create Poll</span>
+                      <span className="xs:hidden">Create</span>
                     </Button>
                   </DialogTrigger>
-                  <DialogContent className="sm:max-w-md">
+                  <DialogContent className="sm:max-w-md mx-4 sm:mx-0">
                     <DialogHeader>
                       <DialogTitle>Create New Poll</DialogTitle>
                     </DialogHeader>
@@ -154,9 +157,9 @@ export default function Dashboard() {
                   </DialogContent>
                 </Dialog>
 
-                <Button variant="outline" onClick={signOut} className="gap-2">
+                <Button variant="outline" onClick={signOut} className="gap-2 flex-1 sm:flex-none">
                   <LogOut className="w-4 h-4" />
-                  Sign Out
+                  <span className="hidden sm:inline">Sign Out</span>
                 </Button>
               </div>
             </div>
@@ -164,14 +167,14 @@ export default function Dashboard() {
         </header>
 
         {/* Stats Cards */}
-        <div className="container mx-auto px-4 py-6">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+        <div className="container mx-auto px-4 py-4 sm:py-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 mb-6 sm:mb-8">
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.1 }}
             >
-              <Card>
+              <Card className="hover:shadow-md transition-shadow">
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                   <CardTitle className="text-sm font-medium">Your Polls</CardTitle>
                   <BarChart3 className="h-4 w-4 text-muted-foreground" />
@@ -188,7 +191,7 @@ export default function Dashboard() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.2 }}
             >
-              <Card>
+              <Card className="hover:shadow-md transition-shadow">
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                   <CardTitle className="text-sm font-medium">Total Polls</CardTitle>
                   <Users className="h-4 w-4 text-muted-foreground" />
@@ -205,7 +208,7 @@ export default function Dashboard() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.3 }}
             >
-              <Card>
+              <Card className="hover:shadow-md transition-shadow sm:col-span-2 lg:col-span-1">
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                   <CardTitle className="text-sm font-medium">Total Votes</CardTitle>
                   <Zap className="h-4 w-4 text-muted-foreground" />
@@ -231,14 +234,20 @@ export default function Dashboard() {
             transition={{ delay: 0.4 }}
           >
             <Tabs defaultValue="your-polls" className="w-full">
-              <TabsList className="grid w-full grid-cols-2">
-                <TabsTrigger value="your-polls">Your Polls ({myPolls.length})</TabsTrigger>
-                <TabsTrigger value="all-polls">All Polls ({allPolls.length})</TabsTrigger>
+              <TabsList className="grid w-full grid-cols-2 h-auto">
+                <TabsTrigger value="your-polls" className="text-xs sm:text-sm px-2 sm:px-4 py-2">
+                  <span className="hidden sm:inline">Your Polls ({myPolls.length})</span>
+                  <span className="sm:hidden">Yours ({myPolls.length})</span>
+                </TabsTrigger>
+                <TabsTrigger value="all-polls" className="text-xs sm:text-sm px-2 sm:px-4 py-2">
+                  <span className="hidden sm:inline">All Polls ({allPolls.length})</span>
+                  <span className="sm:hidden">All ({allPolls.length})</span>
+                </TabsTrigger>
               </TabsList>
               
-              <TabsContent value="your-polls" className="mt-6">
+              <TabsContent value="your-polls" className="mt-4 sm:mt-6">
                 {isLoading ? (
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
                     {[...Array(3)].map((_, i) => (
                       <Card key={i} className="animate-pulse">
                         <CardHeader>
@@ -255,13 +264,13 @@ export default function Dashboard() {
                   </div>
                 ) : myPolls.length === 0 ? (
                   <Card>
-                    <CardContent className="text-center py-12">
+                    <CardContent className="text-center py-8 sm:py-12">
                       <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
                         <Plus className="w-8 h-8 text-primary" />
                       </div>
-                      <h3 className="text-lg font-semibold mb-2">No polls yet</h3>
-                      <p className="text-muted-foreground mb-4">You haven't created any polls yet.</p>
-                      <Button 
+                      <h3 className="text-base sm:text-lg font-semibold mb-2">No polls yet</h3>
+                      <p className="text-sm text-muted-foreground mb-4">You haven't created any polls yet.</p>
+                      <Button
                         onClick={() => setIsCreateModalOpen(true)} 
                         className="gap-2"
                       >
@@ -271,7 +280,7 @@ export default function Dashboard() {
                     </CardContent>
                   </Card>
                 ) : (
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
                     {myPolls.map((poll, index) => (
                       <motion.div
                         key={poll.id}
@@ -286,9 +295,9 @@ export default function Dashboard() {
                 )}
               </TabsContent>
 
-              <TabsContent value="all-polls" className="mt-6">
+              <TabsContent value="all-polls" className="mt-4 sm:mt-6">
                 {isLoading ? (
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
                     {[...Array(6)].map((_, i) => (
                       <Card key={i} className="animate-pulse">
                         <CardHeader>
@@ -305,16 +314,16 @@ export default function Dashboard() {
                   </div>
                 ) : allPolls.length === 0 ? (
                   <Card>
-                    <CardContent className="text-center py-12">
+                    <CardContent className="text-center py-8 sm:py-12">
                       <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
                         <BarChart3 className="w-8 h-8 text-primary" />
                       </div>
-                      <h3 className="text-lg font-semibold mb-2">No polls available</h3>
-                      <p className="text-muted-foreground">No polls have been created yet.</p>
+                      <h3 className="text-base sm:text-lg font-semibold mb-2">No polls available</h3>
+                      <p className="text-sm text-muted-foreground">No polls have been created yet.</p>
                     </CardContent>
                   </Card>
                 ) : (
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
                     {allPolls.map((poll, index) => (
                       <motion.div
                         key={poll.id}
