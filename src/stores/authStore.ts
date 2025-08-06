@@ -37,9 +37,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
 
       // Reset auth state
       set({ user: null, session: null });
-      
-      // Force page reload for clean state
-      window.location.href = '/';
+       
     } catch (error) {
       console.error('Error signing out:', error);
     }
