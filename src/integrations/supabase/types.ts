@@ -111,7 +111,16 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+       Functions: {
+    create_poll_with_options: {
+      Args: {
+        poll_title: string
+        options_text: string[]
+        creator_id: string
+      }
+      Returns: string // adjust this if your function returns something else
+    }
+  }
     }
     Enums: {
       [_ in never]: never

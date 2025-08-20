@@ -9,8 +9,8 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from '@/components/ui/use-toast';
-import { Plus, X } from 'lucide-react';
-
+import { Plus, X } from 'lucide-react'; 
+ 
 const createPollSchema = z.object({
   title: z.string().min(1, 'Poll title is required').max(200, 'Title must be less than 200 characters'),
   options: z
@@ -51,29 +51,13 @@ export const CreatePollForm = ({ onSuccess }: CreatePollFormProps) => {
 
     setIsLoading(true);
     try {
-      // Create the poll
-      const { data: pollData, error: pollError } = await supabase
-        .from('polls')
-        .insert({
-          title: data.title,
-          user_id: user.id,
-        })
-        .select()
-        .single();
+      const { error } = await supabase.rpc('create_poll_with_options', {
+        poll_title: data.title,
+        options_text: data.options.map((o) => o.text),
+        creator_id: user.id,
+      })
 
-      if (pollError) throw pollError;
-
-      // Create the poll options
-      const { error: optionsError } = await supabase
-        .from('poll_options')
-        .insert(
-          data.options.map((option) => ({
-            poll_id: pollData.id,
-            option_text: option.text,
-          }))
-        );
-
-      if (optionsError) throw optionsError;
+      if (error) throw error;
 
       toast({
         title: "Poll created!",
@@ -83,9 +67,18 @@ export const CreatePollForm = ({ onSuccess }: CreatePollFormProps) => {
       form.reset();
       onSuccess();
     } catch (error: any) {
+      let errorMessage = 'An unexpected error occurred while creating the poll.';
+      
+      // Handle duplicate title error
+      if (error.message?.includes('duplicate key value violates unique constraint "polls_user_id_title_key"')) {
+        errorMessage = 'You already have a poll with this title. Please choose a different title.';
+      } else if (error.message) {
+        errorMessage = error.message;
+      }
+      
       toast({
         title: "Error creating poll",
-        description: error.message,
+        description: errorMessage,
         variant: "destructive",
       });
     } finally {
