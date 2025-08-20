@@ -6,7 +6,26 @@ This document outlines the recent bug fixes implemented based on the latest comm
 
 ---
 
-## Fix 1: Corrected Sign-out Flow
+## Fix 1: Database Bug Fixes for Poll Creation
+**Commit:** `f0fc949` - `fix(db): add create_poll_with_options function for atomic poll + options creation
+-fix(db): add unique constraint on polls(user_id, title) to prevent duplicate titles per user`
+
+### Problem
+Poll creation was not fully atomic. If a poll was created but inserting its options failed, the database ended up with orphaned polls or incomplete poll data.  
+Additionally, users were able to create multiple polls with the same title under the same account, causing confusion and data duplication.  
+
+### Cause
+- Poll creation and option insertion were handled as separate operations, without transactional guarantees.  
+- No uniqueness constraint existed on `(user_id, title)` in the `polls` table, allowing duplicate poll titles for the same user.  
+- The frontend did not properly handle errors during poll creation, leading to inconsistent UX.  
+
+### Solution
+- Implemented a new **Postgres function** `create_poll_with_options` that inserts a poll and its options in a **single atomic transaction**.  
+- Added a **unique constraint** on `(user_id, title)` in the `polls` table to prevent duplicate titles for the same user.  
+- Refactored the `CreatePollForm` component to call the new atomic function and provide **better error handling** in case of constraint violations.  
+- Updated Supabase TypeScript types to reflect the new schema and function.  
+
+## Fix 2: Corrected Sign-out Flow
 **Commit:** `d210a68` - `fix: corrected the sign-out flow`
 
 ### #Problem
@@ -79,7 +98,7 @@ signOut: async () => {
 
 ---
 
-## Fix 2: Corrected Reset Password Flow
+## Fix 3: Corrected Reset Password Flow
 **Commit:** `c667b63` - `fix: corrected the reset-password flow`
 
 ### #Problem
@@ -186,7 +205,7 @@ useEffect(() => {
 </div>
 ```
  
-## Fix 3: Improved the responsiveness of the the landing page and corrected the alingment of the themeing button
+## Fix 4: Improved the responsiveness of the the landing page and corrected the alingment of the themeing button
 **Commit:** `2cf5b61` - `fix:improved the responsiveness of the the landing page and corrected the alingment of the themeing button`
 
 ### #Problem
